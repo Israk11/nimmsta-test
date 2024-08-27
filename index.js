@@ -5,15 +5,17 @@ document.addEventListener('DOMContentLoaded', () => {
     NIMMSTA.onReady(() => {
         const connectionManager = new NimmstaConnectionManager();
 
-        connectionManager.on('deviceConnected', (device) => {
+        connectionManager.addEventListener('deviceConnected', (event) => {
+            const device = event.device;
             statusDiv.textContent = 'Connected to device: ' + device.address;
 
-            device.on('scan', (barcode) => {
+            device.addEventListener('scan', (event) => {
+                const barcode = event.barcode;
                 barcodeDiv.textContent = 'Scanned barcode: ' + barcode;
             });
         });
 
-        connectionManager.on('deviceDisconnected', () => {
+        connectionManager.addEventListener('deviceDisconnected', () => {
             statusDiv.textContent = 'Device disconnected. Please reconnect.';
         });
 
@@ -21,7 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const device = connectionManager.devices[0];
             statusDiv.textContent = 'Connected to device: ' + device.address;
 
-            device.on('scan', (barcode) => {
+            device.addEventListener('scan', (event) => {
+                const barcode = event.barcode;
                 barcodeDiv.textContent = 'Scanned barcode: ' + barcode;
             });
         } else {
@@ -32,5 +35,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     NIMMSTA.onError((error) => {
         statusDiv.textContent = 'Error: ' + error.message;
+        console.error('NIMMSTA Error:', error);
+    });
+
+    window.addEventListener('error', (event) => {
+        statusDiv.textContent = 'Error: ' + event.message;
+        console.error('Window Error:', event);
     });
 });
