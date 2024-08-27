@@ -1,45 +1,18 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const statusDiv = document.getElementById('status');
-    const barcodeDiv = document.getElementById('barcode');
+NIMMSTA.websocketPort = 64693;
+NIMMSTA.requestSendTimeout = 1000; // 1000 ms until a request is considered 'failed'
+NIMMSTA.maxCommunicationRetries = 3; // Roughly 3 * 1000 ms = 3000 ms is the time until onError will be invoked if app is missing.
 
-    NIMMSTA.onReady(() => {
-        const connectionManager = new NimmstaConnectionManager();
+// Invoked once connection to app is ready to be used.
+NIMMSTA.onReady(function() {
+    const connectionManager = new NimmstaConnectionManager();
+    if (connectionManager.devices.length > 0) {
+        const device = connectionManager.devices[0];
+    } else {
+        connectionManager.displayConnectActivity();
+    }
+});
 
-        connectionManager.addEventListener('deviceConnected', (event) => {
-            const device = event.device;
-            statusDiv.textContent = 'Connected to device: ' + device.address;
-
-            device.addEventListener('scan', (event) => {
-                const barcode = event.barcode;
-                barcodeDiv.textContent = 'Scanned barcode: ' + barcode;
-            });
-        });
-
-        connectionManager.addEventListener('deviceDisconnected', () => {
-            statusDiv.textContent = 'Device disconnected. Please reconnect.';
-        });
-
-        if (connectionManager.devices.length > 0) {
-            const device = connectionManager.devices[0];
-            statusDiv.textContent = 'Connected to device: ' + device.address;
-
-            device.addEventListener('scan', (event) => {
-                const barcode = event.barcode;
-                barcodeDiv.textContent = 'Scanned barcode: ' + barcode;
-            });
-        } else {
-            connectionManager.displayConnectActivity();
-            statusDiv.textContent = 'Please connect a NIMMSTA device.';
-        }
-    });
-
-    NIMMSTA.onError((error) => {
-        statusDiv.textContent = 'Error: ' + error.message;
-        console.error('NIMMSTA Error:', error);
-    });
-
-    window.addEventListener('error', (event) => {
-        statusDiv.textContent = 'Error: ' + event.message;
-        console.error('Window Error:', event);
-    });
+NIMMSTA.onError(function(error) {
+    // handle error, e.g. app is not installed, so no connection was established.
+    // Retry connect by calling NIMMSTA.tryConnect()
 });
